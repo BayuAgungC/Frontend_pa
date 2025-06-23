@@ -137,47 +137,7 @@ const ClientForm = ({ onCancel, onSave, client }) => {
             )
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Tarif</label>
-            <input
-              type="number"
-              name="tarif"
-              value={formData.tarif}
-              onChange={handleChange}
-              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-black"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Terbayar</label>
-            <input
-              type="number"
-              name="terbayar"
-              value={formData.terbayar}
-              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-black"
-              disabled
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Kekurangan</label>
-            <input
-              type="text"
-              value={formData.tarif - formData.terbayar}
-              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-black"
-              disabled
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Keterangan</label>
-            <input
-              type="text"
-              value={formData.tarif - formData.terbayar === 0 ? 'Lunas' : 'Belum Lunas'}
-              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-black"
-              disabled
-            />
-          </div>
+         
 
           <div>
             <label htmlFor="status" className="block text-sm font-medium text-gray-700">

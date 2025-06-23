@@ -50,7 +50,6 @@ const Client = () => {
     }
   };
 
-
   const fetchTransactions = async () => {
     try {
       const response = await axios.get("http://localhost:5000/transactions");
@@ -85,7 +84,10 @@ const Client = () => {
   const handleSaveClient = async (clientData) => {
     try {
       if (editClient) {
-        await axios.patch(`http://localhost:5000/clients/${editClient.id}`, clientData);
+        await axios.patch(
+          `http://localhost:5000/clients/${editClient.id}`,
+          clientData
+        );
         Swal.fire({
           icon: "success",
           title: "Berhasil",
@@ -174,29 +176,29 @@ const Client = () => {
       client.luasTanah?.toString().includes(searchTerm.toLowerCase()) ||
       client.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.alamat?.toLowerCase().includes(searchTerm.toLowerCase());
-  
+
     const matchesStatus = filterStatus ? client.status === filterStatus : true;
     const matchesLayanan = filterLayanan
       ? client.layanan === filterLayanan
       : true;
-  
+
     const matchesKeteranganLunas =
       filterKeteranganLunas === ""
         ? true
         : client.keterangan === filterKeteranganLunas;
-  
+
     const matchesTanggalMasuk =
       filterTanggalMasuk.start && filterTanggalMasuk.end
         ? new Date(client.tglMasuk) >= new Date(filterTanggalMasuk.start) &&
           new Date(client.tglMasuk) <= new Date(filterTanggalMasuk.end)
         : true;
-  
+
     const matchesTanggalKeluar =
       filterTanggalKeluar.start && filterTanggalKeluar.end
         ? new Date(client.tglSelesai) >= new Date(filterTanggalKeluar.start) &&
           new Date(client.tglSelesai) <= new Date(filterTanggalKeluar.end)
         : true;
-  
+
     return (
       matchesSearch &&
       matchesStatus &&
@@ -206,7 +208,6 @@ const Client = () => {
       matchesTanggalKeluar
     );
   });
-  
 
   const indexOfLastClient = currentPage * clientsPerPage;
   const indexOfFirstClient = indexOfLastClient - clientsPerPage;
@@ -243,61 +244,44 @@ const Client = () => {
         </button>
       </div>
 
-      {/* Filter */}
-      <div className="mb-4 flex gap-4">
-      <div className="flex-1">
-    <label className="block text-sm font-medium text-gray-700">
-      Filter Status
-    </label>
-    <select
-      value={filterStatus}
-      onChange={(e) => setFilterStatus(e.target.value)}
-      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm"
-    >
-      <option value="">Semua Status</option>
-      <option value="Selesai">Selesai</option>
-      <option value="On-Going">On-Going</option>
-      <option value="Cancel">Cancel</option>
-    </select>
-  </div>
+      <div className="mb-4 flex flex-wrap gap-4">
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-sm font-medium text-gray-700">
+            Filter Status
+          </label>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm"
+          >
+            <option value="">Semua Status</option>
+            <option value="Selesai">Selesai</option>
+            <option value="On-Going">On-Going</option>
+            <option value="Cancel">Cancel</option>
+          </select>
+        </div>
 
-  <div className="flex-1">
-    <label className="block text-sm font-medium text-gray-700">
-      Filter Layanan
-    </label>
-    <select
-      value={filterLayanan}
-      onChange={(e) => setFilterLayanan(e.target.value)}
-      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm"
-    >
-      <option value="">Semua Layanan</option>
-      {Array.from(new Set(clients.map((client) => client.layanan))).map(
-        (layanan) => (
-          <option key={layanan} value={layanan}>
-            {layanan}
-          </option>
-        )
-      )}
-    </select>
-  </div>
+        <div className="flex-1 min-w-[200px]">
+          <label className="block text-sm font-medium text-gray-700">
+            Filter Layanan
+          </label>
+          <select
+            value={filterLayanan}
+            onChange={(e) => setFilterLayanan(e.target.value)}
+            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm"
+          >
+            <option value="">Semua Layanan</option>
+            {Array.from(new Set(clients.map((client) => client.layanan))).map(
+              (layanan) => (
+                <option key={layanan} value={layanan}>
+                  {layanan}
+                </option>
+              )
+            )}
+          </select>
+        </div>
 
-         {/* Filter Keterangan Lunas */}
-         <div className="flex-1">
-    <label className="block text-sm font-medium text-gray-700">
-      Filter Keterangan Lunas
-    </label>
-    <select
-      value={filterKeteranganLunas}
-      onChange={(e) => setFilterKeteranganLunas(e.target.value)}
-      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm"
-    >
-      <option value="">Semua</option>
-      <option value="Lunas">Lunas</option>
-      <option value="Belum Lunas">Belum Lunas</option>
-    </select>
-  </div>
-
-        <div>
+        <div className="flex-1 min-w-[200px]">
           <label className="block text-sm font-medium text-gray-700">
             Filter Tanggal Masuk
           </label>
@@ -328,7 +312,7 @@ const Client = () => {
           </div>
         </div>
 
-        <div>
+        <div className="flex-1 min-w-[200px]">
           <label className="block text-sm font-medium text-gray-700">
             Filter Tanggal Keluar
           </label>
@@ -387,9 +371,6 @@ const Client = () => {
                 Status
               </th>
               <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
-                keterangan
-              </th>
-              <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
                 Actions
               </th>
             </tr>
@@ -422,9 +403,7 @@ const Client = () => {
                   <td className="border-t-2 border-gray-200 py-2 px-4">
                     {client.status}
                   </td>
-                  <td className="border-t-2 border-gray-200 py-2 px-4">
-                    {client.keterangan}
-                  </td>
+
                   <td className="border-t-2 border-gray-200 py-2 px-4 flex justify-around">
                     <button
                       className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm"
@@ -469,132 +448,123 @@ const Client = () => {
         </button>
       </div>
 
-      {/* Detail Floating Page */}
       {showDetails && selectedClient && (
-  <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-    <div className="bg-white p-6 rounded-xl shadow-xl max-w-3xl w-full">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold text-gray-800">Detail Client</h2>
-      </div>
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-xl max-w-3xl w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold text-gray-800">
+                Detail Client
+              </h2>
+            </div>
 
-      <div className="space-y-4">
-        {/* Nama */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">Nama:</span>
-          <span className="text-gray-900">{selectedClient.nama || "-"}</span>
-        </div>
+            {/* Tabel untuk detail client */}
+            <table className="min-w-full table-auto text-left">
+              <tbody>
+                <tr>
+                  <td className="py-2 px-4 font-medium text-gray-700">Nama</td>
+                  <td className="py-2 px-4 text-gray-900">:</td>
+                  <td className="py-2 px-4 text-gray-900">
+                    {selectedClient.nama || "-"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-4 font-medium text-gray-700">NIK</td>
+                  <td className="py-2 px-4 text-gray-900">:</td>
+                  <td className="py-2 px-4 text-gray-900">
+                    {selectedClient.nik || "-"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-4 font-medium text-gray-700">
+                    Contact
+                  </td>
+                  <td className="py-2 px-4 text-gray-900">:</td>
+                  <td className="py-2 px-4 text-gray-900">
+                    {selectedClient.contact || "-"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-4 font-medium text-gray-700">
+                    Layanan
+                  </td>
+                  <td className="py-2 px-4 text-gray-900">:</td>
+                  <td className="py-2 px-4 text-gray-900">
+                    {selectedClient.layanan || "-"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-4 font-medium text-gray-700">
+                    Data Tanah
+                  </td>
+                  <td className="py-2 px-4 text-gray-900">:</td>
+                  <td className="py-2 px-4 text-gray-900">
+                    {selectedClient.dataTanah || "N/A"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-4 font-medium text-gray-700">
+                    Luas Tanah
+                  </td>
+                  <td className="py-2 px-4 text-gray-900">:</td>
+                  <td className="py-2 px-4 text-gray-900">
+                    {selectedClient.luasTanah
+                      ? `${selectedClient.luasTanah} m²`
+                      : "N/A"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-4 font-medium text-gray-700">
+                    Alamat
+                  </td>
+                  <td className="py-2 px-4 text-gray-900">:</td>
+                  <td className="py-2 px-4 text-gray-900">
+                    {selectedClient.alamat || "N/A"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-4 font-medium text-gray-700">
+                    Tanggal Masuk
+                  </td>
+                  <td className="py-2 px-4 text-gray-900">:</td>
+                  <td className="py-2 px-4 text-gray-900">
+                    {new Date(selectedClient.tglMasuk).toLocaleDateString()}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-4 font-medium text-gray-700">
+                    Tanggal Selesai
+                  </td>
+                  <td className="py-2 px-4 text-gray-900">:</td>
+                  <td className="py-2 px-4 text-gray-900">
+                    {selectedClient.tglSelesai
+                      ? new Date(selectedClient.tglSelesai).toLocaleDateString()
+                      : "N/A"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-4 font-medium text-gray-700">
+                    Deskripsi
+                  </td>
+                  <td className="py-2 px-4 text-gray-900">:</td>
+                  <td className="py-2 px-4 text-gray-900">
+                    {selectedClient.deskripsi || "N/A"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
 
-        {/* NIK */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">NIK:</span>
-          <span className="text-gray-900">{selectedClient.nik || "-"}</span>
-        </div>
-
-        {/* Contact */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">Contact:</span>
-          <span className="text-gray-900">{selectedClient.contact || "-"}</span>
-        </div>
-
-        {/* Layanan */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">Layanan:</span>
-          <span className="text-gray-900">{selectedClient.layanan || "-"}</span>
-        </div>
-
-        {/* Data Tanah */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">Data Tanah:</span>
-          <span className="text-gray-900">{selectedClient.dataTanah || "N/A"}</span>
-        </div>
-
-        {/* Luas Tanah */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">Luas Tanah:</span>
-          <span className="text-gray-900">
-            {selectedClient.luasTanah ? `${selectedClient.luasTanah} m²` : "N/A"}
-          </span>
-        </div>
-
-        {/* Alamat */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">Alamat:</span>
-          <span className="text-gray-900">{selectedClient.alamat || "N/A"}</span>
-        </div>
-
-        {/* Tanggal Masuk */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">Tanggal Masuk:</span>
-          <span className="text-gray-900">
-            {new Date(selectedClient.tglMasuk).toLocaleDateString()}
-          </span>
-        </div>
-
-        {/* Tanggal Selesai */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">Tanggal Selesai:</span>
-          <span className="text-gray-900">
-            {selectedClient.tglSelesai
-              ? new Date(selectedClient.tglSelesai).toLocaleDateString()
-              : "N/A"}
-          </span>
-        </div>
-
-        {/* Tarif */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">Tarif:</span>
-          <span className="text-gray-900">
-            Rp {selectedClient.tarif?.toLocaleString() || "-"}
-          </span>
-        </div>
-
-        {/* Terbayar */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">Terbayar:</span>
-          <span className="text-gray-900">
-            Rp {selectedClient.terbayar?.toLocaleString() || "0"}
-          </span>
-        </div>
-
-        {/* Kekurangan */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">Kekurangan:</span>
-          <span className="text-gray-900">
-            Rp{" "}
-            {(selectedClient.tarif - selectedClient.terbayar)?.toLocaleString() || "0"}
-          </span>
-        </div>
-
-        {/* Keterangan */}
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-gray-700">Keterangan:</span>
-          <span className="text-gray-900">
-            {selectedClient.tarif - selectedClient.terbayar === 0 ? "Lunas" : "Belum Lunas"}
-          </span>
-        </div>
-
-        {/* Deskripsi */}
-        <div className="flex justify-between items-start">
-          <span className="font-medium text-gray-700">Deskripsi:</span>
-          <div className="text-gray-900 max-h-48 overflow-y-auto w-full bg-gray-50 p-2 rounded-md">
-            <p>{selectedClient.deskripsi || "N/A"}</p>
+            {/* Footer Button */}
+            <div className="mt-6 flex justify-end">
+              <button
+                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition duration-200"
+                onClick={() => setShowDetails(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Footer Button */}
-      <div className="mt-6 flex justify-end">
-        <button
-          className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition duration-200"
-          onClick={() => setShowDetails(false)}
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+      )}
 
       {/* Form Modal */}
       {showForm && (

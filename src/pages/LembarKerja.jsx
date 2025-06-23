@@ -7,6 +7,7 @@ import {
   faEye,
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import LembarKerjaForm from "../Form/LembarKerjaFrom";
 import Swal from "sweetalert2";
 
@@ -22,6 +23,7 @@ const LembarKerja = () => {
   const [filterKategori, setFilterKategori] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState("");
+
 
   const lembarKerjasPerPage = 5;
   const indexOfLastLembarKerja = currentPage * lembarKerjasPerPage;
@@ -192,6 +194,8 @@ const LembarKerja = () => {
   const nextPage = () => setCurrentPage(currentPage + 1);
   const prevPage = () => setCurrentPage(currentPage - 1);
 
+
+
   return (
     <div className="container mx-auto p-4 text-black">
       <h1 className="text-2xl font-bold mb-4">Data Lembar Kerja</h1>
@@ -308,6 +312,7 @@ const LembarKerja = () => {
                   <td className="border-t-2 border-gray-200 py-2 px-4">
                     {lembarKerja.kategori}
                   </td>
+                 
                   <td className="border-t-2 border-gray-200 py-2 px-4">
                     {lembarKerja.file ? (
                       <button
@@ -354,6 +359,7 @@ const LembarKerja = () => {
         </table>
       </div>
 
+      
       {/* Pagination */}
       <div className="flex justify-between mt-4">
         <button

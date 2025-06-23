@@ -18,14 +18,46 @@ const DataClient = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterKepemilikan, setFilterKepemilikan] = useState("");
+  const [filterKategori, setFilterKategori] = useState("");
+  const [filterLayanan, setFilterLayanan] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState("");
+  const [showLayananModal, setShowLayananModal] = useState(false);
+  const [selectedLayanan, setSelectedLayanan] = useState(null);
+
 
   const clientsPerPage = 5;
   const indexOfLastClient = currentPage * clientsPerPage;
   const indexOfFirstClient = indexOfLastClient - clientsPerPage;
 
+    const layananList = [
+  {
+    nama: "PPJB (Perjanjian Pengikatan Jual Beli)",
+    syarat: [
+      "Fotokopi KTP Para Pihak",
+      "Fotokopi Sertifikat",
+      "Fotokopi PBB Tahun Terakhir",
+      "Fotokopi IMB (jika ada)",
+    ],
+  },
+  {
+    nama: "AKTA SEWA",
+    syarat: [
+      "Fotokopi KTP Para Pihak",
+      "Data Objek Sewa",
+      "Nilai Sewa & Jangka Waktu",
+    ],
+  },
+  {
+    nama: "WASIAT",
+    syarat: [
+      "Fotokopi KTP Pewaris",
+      "Data Harta yang Diwariskan",
+      "Penerima Wasiat",
+    ],
+  },
+];
   useEffect(() => {
     fetchClients();
     fetchDataClients();
@@ -57,14 +89,19 @@ const DataClient = () => {
     }
   };
 
+
+
+
   const handleSaveDataClient = async (newDataClient, file) => {
-    const username = localStorage.getItem("username"); 
+    const username = localStorage.getItem("username");
     const formData = new FormData();
-    console.log("Username yang diambil dari localStorage:", username); // Debugging
+    console.log("Username yang diambil dari localStorage:", username);
     formData.append("nama", newDataClient.nama);
     formData.append("kepemilikan", newDataClient.kepemilikan);
+    formData.append("kategori", newDataClient.kategori);
+    formData.append("layanan", newDataClient.layanan);
     formData.append("createdBy", username);
-    formData.append("uploadedBy", username); // Kirim ke backend
+    formData.append("uploadedBy", username);
 
     if (file) {
       formData.append("file", file);
@@ -162,7 +199,11 @@ const DataClient = () => {
         dataClient.kepemilikan
           .toLowerCase()
           .includes(searchTerm.toLowerCase())) &&
-      (filterKepemilikan ? dataClient.kepemilikan === filterKepemilikan : true)
+      (filterKepemilikan
+        ? dataClient.kepemilikan === filterKepemilikan
+        : true) &&
+      (filterKategori ? dataClient.kategori === filterKategori : true) &&
+      (filterLayanan ? dataClient.layanan === filterLayanan : true)
   );
 
   const currentDataClients = filteredDataClients.slice(
@@ -175,7 +216,7 @@ const DataClient = () => {
 
   return (
     <div className="container mx-auto p-4 text-black">
-      <h1 className="text-2xl font-bold mb-4">Documnt Client</h1>
+      <h1 className="text-2xl font-bold mb-4">Document Client</h1>
 
       <div className="mb-4 flex flex-wrap items-center justify-between">
         <div className="flex flex-wrap items-center mb-4">
@@ -192,6 +233,13 @@ const DataClient = () => {
           >
             + Add New Data Client
           </button>
+          <button
+  className="ml-2 bg-purple-600 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded"
+  onClick={() => setShowLayananModal(true)}
+>
+  Info Layanan
+</button>
+
         </div>
       </div>
 
@@ -209,6 +257,34 @@ const DataClient = () => {
             </option>
           ))}
         </select>
+
+        <select
+          className="px-3 py-2 bg-white text-black border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-blue-500"
+          value={filterKategori}
+          onChange={(e) => setFilterKategori(e.target.value)}
+        >
+          <option value="">Filter by Kategori</option>
+          <option value="KTP">KTP</option>
+          <option value="KK">KK</option>
+          <option value="NPWP">NPWP</option>
+          <option value="SERTIFIKAT">SERTIFIKAT</option>
+          <option value="SURAT NIKAH">SURAT NIKAH</option>
+          <option value="AKTA KEMATIAN">AKTA KEMATIAN</option>
+          <option value="LAINYA">LAINYA</option>
+        </select>
+
+        <select
+          className="px-3 py-2 bg-white text-black border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-blue-500"
+          value={filterLayanan}
+          onChange={(e) => setFilterLayanan(e.target.value)}
+        >
+          <option value="">Filter by Layanan</option>
+          <option value="PPJB">PPJB</option>
+          <option value="KK">KM</option>
+          <option value="IMB">IMB</option>
+          <option value="WASIAT">WASIAT</option>
+          <option value="AKTA NIKAH">AKTA SEWA</option>
+        </select>
       </div>
 
       <div className="bg-white rounded-lg shadow-lg p-4">
@@ -220,6 +296,12 @@ const DataClient = () => {
               </th>
               <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
                 Kepemilikan
+              </th>
+              <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
+                kategori
+              </th>
+              <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
+                layanan
               </th>
               <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
                 File
@@ -255,6 +337,12 @@ const DataClient = () => {
                     {dataClient.kepemilikan}
                   </td>
                   <td className="border-t-2 border-gray-200 py-2 px-4">
+                    {dataClient.kategori}
+                  </td>
+                  <td className="border-t-2 border-gray-200 py-2 px-4">
+                    {dataClient.layanan}
+                  </td>
+                  <td className="border-t-2 border-gray-200 py-2 px-4">
                     {dataClient.file ? (
                       <button
                         className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center justify-center gap-2"
@@ -274,7 +362,6 @@ const DataClient = () => {
                           onClick={() => handleEditDataClient(dataClient)}
                         >
                           <FontAwesomeIcon icon={faEdit} />
-                          
                         </button>
                       )}
                       <a
@@ -285,12 +372,12 @@ const DataClient = () => {
                         <FontAwesomeIcon icon={faDownload} />
                       </a>
                       {showEditButton && (
-                      <button
-                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center gap-2"
-                        onClick={() => handleDeleteDataClient(dataClient.id)}
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
+                        <button
+                          className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center gap-2"
+                          onClick={() => handleDeleteDataClient(dataClient.id)}
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
                       )}
                     </div>
                   </td>
@@ -351,6 +438,54 @@ const DataClient = () => {
           </div>
         </div>
       )}
+        {showLayananModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg w-11/12 md:w-2/3 lg:w-1/2 max-h-[80vh] overflow-auto relative">
+      <button
+        className="absolute top-2 right-2 text-black font-medium bg-transparent hover:underline font-bold"
+        onClick={() => {
+          setShowLayananModal(false);
+          setSelectedLayanan(null);
+        }}
+      >
+        Close
+      </button>
+
+      {!selectedLayanan ? (
+        <>
+          <h2 className="text-xl font-bold mb-4">Daftar Layanan Kantor Notaris</h2>
+          <ul className="space-y-2">
+            {layananList.map((layanan, index) => (
+              <li
+                key={index}
+                className="bg-gray-100 p-3 rounded cursor-pointer hover:bg-gray-200"
+                onClick={() => setSelectedLayanan(layanan)}
+              >
+                {layanan.nama}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <>
+          <h2 className="text-xl font-bold mb-2">{selectedLayanan.nama}</h2>
+          <p className="text-gray-600 mb-2">Syarat-syarat:</p>
+          <ul className="list-disc list-inside text-gray-800 mb-4">
+            {selectedLayanan.syarat.map((syarat, idx) => (
+              <li key={idx}>{syarat}</li>
+            ))}
+          </ul>
+          <button
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+            onClick={() => setSelectedLayanan(null)}
+          >
+            Kembali ke Daftar Layanan
+          </button>
+        </>
+      )}
+    </div>
+  </div>
+)}
     </div>
   );
 };

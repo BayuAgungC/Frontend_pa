@@ -6,6 +6,8 @@ const DataClientForm = ({ onCancel, onSave, dataClient }) => {
   const [newDataClient, setNewDataClient] = useState({
     nama: "",
     kepemilikan: "",
+    kategori:"",
+    layanan:"",
     file: "",
   });
   const [clients, setClients] = useState([]);
@@ -18,12 +20,16 @@ const DataClientForm = ({ onCancel, onSave, dataClient }) => {
       setNewDataClient({
         nama: dataClient.nama,
         kepemilikan: dataClient.kepemilikan,
+        kategori: dataClient.kategori,
+        layanan: dataClient.layanan,
         file: dataClient.file,
       });
     } else {
       setNewDataClient({
         nama: "",
         kepemilikan: "",
+        kategori:"",
+        layanan:"",
         file: "",
       });
     }
@@ -203,7 +209,52 @@ const DataClientForm = ({ onCancel, onSave, dataClient }) => {
               ))}
             </select>
           </div>
-
+          <div>
+            <label
+              htmlFor="kategori"
+              className="block text-sm font-medium text-gray-700"
+            >
+              kategori<span className="text-red-500">*</span>
+            </label>
+            <select
+              id="kategori"
+              name="kategori"
+              value={newDataClient.kategori}
+              onChange={handleChange}
+              className="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              required
+            >
+              <option value="KTP">KTP</option>
+              <option value="KK">KK</option>
+              <option value="NPWP">NPWP</option>
+              <option value="SERTIFIKAT">SERTIFIKAT</option>
+              <option value="SURAT NIKAH">SURAT NIKAH</option>
+              <option value="AKTA KEMATIAN">AKTA KEMATIAN</option>
+              <option value="LAINYA">LAINYA</option>
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="layanan"
+              className="block text-sm font-medium text-gray-700"
+            >
+              layanan<span className="text-red-500">*</span>
+            </label>
+            <select
+              id="layanan"
+              name="layanan"
+              value={newDataClient.layanan}
+              onChange={handleChange}
+              className="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              required
+            >
+              <option value="PPJB">PPJB</option>
+              <option value="KK">KM</option>
+              <option value="IMB">IMB</option>
+              <option value="WASIAT">WASIAT</option>
+              <option value="AKTA NIKAH">AKTA SEWA</option>
+            </select>
+          </div>
           {/* Upload File */}
           <div>
             <label
