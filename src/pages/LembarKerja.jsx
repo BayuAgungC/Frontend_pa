@@ -5,9 +5,9 @@ import {
   faDownload,
   faTrash,
   faEye,
+  faInfoCircle, // Tambahkan ikon untuk tombol "i"
 } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
-import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
 import LembarKerjaForm from "../Form/LembarKerjaFrom";
 import Swal from "sweetalert2";
 
@@ -23,7 +23,8 @@ const LembarKerja = () => {
   const [filterKategori, setFilterKategori] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState("");
-
+  const [historiStatus, setHistoriStatus] = useState([]); // State untuk menyimpan histori status
+  const [showHistoriModal, setShowHistoriModal] = useState(false); // State untuk histori modal
 
   const lembarKerjasPerPage = 5;
   const indexOfLastLembarKerja = currentPage * lembarKerjasPerPage;
@@ -49,9 +50,7 @@ const LembarKerja = () => {
 
   const fetchLembarKerjas = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/admin/LembarKerja"
-      );
+      const response = await axios.get("http://localhost:5000/admin/LembarKerja");
       setLembarKerjas(response.data);
     } catch (error) {
       Swal.fire({
@@ -62,10 +61,23 @@ const LembarKerja = () => {
     }
   };
 
+  const fetchHistoriStatus = async (id) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/admin/LembarKerja/${id}/histori`);
+      setHistoriStatus(response.data);
+      setShowHistoriModal(true); // Tampilkan modal histori
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Gagal mengambil histori",
+        text: error.message,
+      });
+    }
+  };
+
   const handleSaveLembarKerja = async (newLembarKerja, file) => {
-    const username = localStorage.getItem("username"); 
+    const username = localStorage.getItem("username");
     const formData = new FormData();
-    console.log("Username yang diambil dari localStorage:", username); // Debugging
     formData.append("nama", newLembarKerja.nama);
     formData.append("kepemilikan", newLembarKerja.kepemilikan);
     formData.append("status", newLembarKerja.status);
@@ -161,7 +173,6 @@ const LembarKerja = () => {
     setShowForm(!showForm);
   };
 
-  // Get unique values for status and kategori
   const getUniqueValues = (array, key) => {
     return [...new Set(array.map((item) => item[key]))].filter(Boolean);
   };
@@ -193,8 +204,6 @@ const LembarKerja = () => {
 
   const nextPage = () => setCurrentPage(currentPage + 1);
   const prevPage = () => setCurrentPage(currentPage - 1);
-
-
 
   return (
     <div className="container mx-auto p-4 text-black">
@@ -291,9 +300,9 @@ const LembarKerja = () => {
               return (
                 <tr key={index} className="text-black">
                   <td className="border-t-2 border-gray-200 py-2 px-4">
-                  <div className="flex flex-col">
-                   <span>{lembarKerja.nama} </span>
-                   <span className="text-xs text-gray-500">
+                    <div className="flex flex-col">
+                      <span>{lembarKerja.nama}</span>
+                      <span className="text-xs text-gray-500">
                         Diunggah oleh: {lembarKerja.createdBy || "Unknown"}
                         <br />
                         Tgl Upload:{" "}
@@ -301,7 +310,7 @@ const LembarKerja = () => {
                           "id-ID"
                         )}
                       </span>
-                  </div>
+                    </div>
                   </td>
                   <td className="border-t-2 border-gray-200 py-2 px-4">
                     {lembarKerja.kepemilikan}
@@ -312,7 +321,7 @@ const LembarKerja = () => {
                   <td className="border-t-2 border-gray-200 py-2 px-4">
                     {lembarKerja.kategori}
                   </td>
-                 
+
                   <td className="border-t-2 border-gray-200 py-2 px-4">
                     {lembarKerja.file ? (
                       <button
@@ -327,14 +336,21 @@ const LembarKerja = () => {
                   </td>
                   <td className="border-t-2 border-gray-200 py-2 px-4">
                     <div className="flex justify-around gap-2">
-                    {showEditButton && (
+                      {/* Tombol Info untuk Histori */}
                       <button
                         className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center gap-2"
-                        onClick={() => handleEditLembarKerja(lembarKerja)}
+                        onClick={() => fetchHistoriStatus(lembarKerja.id)} // Ambil histori ketika tombol "i" ditekan
                       >
-                        <FontAwesomeIcon icon={faEdit} />
+                        <FontAwesomeIcon icon={faInfoCircle} />
                       </button>
-                    )}
+                      {showEditButton && (
+                        <button
+                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center gap-2"
+                          onClick={() => handleEditLembarKerja(lembarKerja)}
+                        >
+                          <FontAwesomeIcon icon={faEdit} />
+                        </button>
+                      )}
                       <a
                         href={lembarKerja.file}
                         className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center gap-2"
@@ -343,12 +359,12 @@ const LembarKerja = () => {
                         <FontAwesomeIcon icon={faDownload} />
                       </a>
                       {showEditButton && (
-                      <button
-                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center gap-2"
-                        onClick={() => handleDeleteLembarKerja(lembarKerja.id)}
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
+                        <button
+                          className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center gap-2"
+                          onClick={() => handleDeleteLembarKerja(lembarKerja.id)}
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
                       )}
                     </div>
                   </td>
@@ -359,7 +375,6 @@ const LembarKerja = () => {
         </table>
       </div>
 
-      
       {/* Pagination */}
       <div className="flex justify-between mt-4">
         <button
@@ -394,6 +409,29 @@ const LembarKerja = () => {
               frameBorder="0"
               title="File Viewer"
             ></iframe>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for viewing histori status */}
+      {showHistoriModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-4 w-11/12 md:w-3/4 lg:w-1/2 h-3/4 relative">
+            <button
+              className="absolute top-2 right-2 text-red-500"
+              onClick={() => setShowHistoriModal(false)}
+            >
+              Close
+            </button>
+            <h2 className="text-xl font-semibold mb-4">Histori Status</h2>
+            <ul className="space-y-2">
+              {historiStatus.map((item, index) => (
+                <li key={index}>
+                  <span className="font-semibold">{item.status}</span> -{" "}
+                  {new Date(item.tanggalStatus).toLocaleDateString("id-ID")}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       )}
