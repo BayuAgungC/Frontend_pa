@@ -8,6 +8,7 @@ const DataClientForm = ({ onCancel, onSave, dataClient }) => {
     kepemilikan: "",
     kategori:"",
     layanan:"",
+    status:"",
     file: "",
   });
   const [clients, setClients] = useState([]);
@@ -22,6 +23,7 @@ const DataClientForm = ({ onCancel, onSave, dataClient }) => {
         kepemilikan: dataClient.kepemilikan,
         kategori: dataClient.kategori,
         layanan: dataClient.layanan,
+        status: dataClient.status,
         file: dataClient.file,
       });
     } else {
@@ -30,6 +32,7 @@ const DataClientForm = ({ onCancel, onSave, dataClient }) => {
         kepemilikan: "",
         kategori:"",
         layanan:"",
+        status:"",
         file: "",
       });
     }
@@ -253,6 +256,25 @@ const DataClientForm = ({ onCancel, onSave, dataClient }) => {
               <option value="IMB">IMB</option>
               <option value="WASIAT">WASIAT</option>
               <option value="AKTA NIKAH">AKTA SEWA</option>
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="status"
+              className="block text-sm font-medium text-gray-700"
+            >
+              status<span className="text-red-500">*</span>
+            </label>
+            <select
+              id="status"
+              name="status"
+              value={newDataClient.status}
+              onChange={handleChange}
+              className="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              required
+            >
+              <option value="proses pemberkasan">proses pemberkasan</option>
+              <option value="pemberkasan selesai">pemberkasan selesai</option>
             </select>
           </div>
           {/* Upload File */}

@@ -1,67 +1,28 @@
 import React, { useState, useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEdit,
-  faDownload,
-  faTrash,
-  faEye,
-} from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
-import DataClientForm from "../Form/DataClientForm";
 import Swal from "sweetalert2";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEdit, faDownload, faTrash, faEye } from "@fortawesome/free-solid-svg-icons";
+import DataClientForm from "../Form/DataClientForm"; // Import form yang benar
 
 const DataClient = () => {
   const [dataClients, setDataClients] = useState([]);
   const [clients, setClients] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [editDataClient, setEditDataClient] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
   const [filterKepemilikan, setFilterKepemilikan] = useState("");
-  const [filterKategori, setFilterKategori] = useState("");
   const [filterLayanan, setFilterLayanan] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [selectedFolder, setSelectedFolder] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editDataClient, setEditDataClient] = useState(null); // Data client untuk edit
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState("");
   const [showLayananModal, setShowLayananModal] = useState(false);
-  const [selectedLayanan, setSelectedLayanan] = useState(null);
 
-
-  const clientsPerPage = 5;
-  const indexOfLastClient = currentPage * clientsPerPage;
-  const indexOfFirstClient = indexOfLastClient - clientsPerPage;
-
-    const layananList = [
-  {
-    nama: "PPJB (Perjanjian Pengikatan Jual Beli)",
-    syarat: [
-      "Fotokopi KTP Para Pihak",
-      "Fotokopi Sertifikat",
-      "Fotokopi PBB Tahun Terakhir",
-      "Fotokopi IMB (jika ada)",
-    ],
-  },
-  {
-    nama: "AKTA SEWA",
-    syarat: [
-      "Fotokopi KTP Para Pihak",
-      "Data Objek Sewa",
-      "Nilai Sewa & Jangka Waktu",
-    ],
-  },
-  {
-    nama: "WASIAT",
-    syarat: [
-      "Fotokopi KTP Pewaris",
-      "Data Harta yang Diwariskan",
-      "Penerima Wasiat",
-    ],
-  },
-];
-  useEffect(() => {
-    fetchClients();
-    fetchDataClients();
-  }, []);
+  // Untuk form gimmick
+  const [selectedLayanan, setSelectedLayanan] = useState("");
+  const [selectedKepemilikan, setSelectedKepemilikan] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [syarat, setSyarat] = useState([]);
+  const [gimmickData, setGimmickData] = useState({});
 
   const fetchClients = async () => {
     try {
@@ -89,17 +50,14 @@ const DataClient = () => {
     }
   };
 
-
-
-
   const handleSaveDataClient = async (newDataClient, file) => {
     const username = localStorage.getItem("username");
     const formData = new FormData();
-    console.log("Username yang diambil dari localStorage:", username);
     formData.append("nama", newDataClient.nama);
     formData.append("kepemilikan", newDataClient.kepemilikan);
     formData.append("kategori", newDataClient.kategori);
     formData.append("layanan", newDataClient.layanan);
+    formData.append("status", newDataClient.status);
     formData.append("createdBy", username);
     formData.append("uploadedBy", username);
 
@@ -147,6 +105,7 @@ const DataClient = () => {
     }
   };
 
+  // Fungsi untuk menghapus Data Client
   const handleDeleteDataClient = async (id) => {
     const result = await Swal.fire({
       title: "Apakah anda yakin?",
@@ -179,40 +138,100 @@ const DataClient = () => {
   };
 
   const handleEditDataClient = (dataClient) => {
-    setEditDataClient(dataClient);
-    toggleForm();
+    setEditDataClient(dataClient); // Set data client untuk edit
+    setShowForm(true); // Menampilkan form
   };
 
+  // Fungsi untuk melihat file
   const handleViewFile = (file) => {
     setModalContent(file);
     setShowModal(true);
   };
 
+  useEffect(() => {
+    fetchClients();
+    fetchDataClients();
+  }, []);
+
+  // Filter dataClients berdasarkan kepemilikan dan layanan
+  const filteredDataClients = dataClients.filter(
+    (dataClient) =>
+      (filterKepemilikan ? dataClient.kepemilikan === filterKepemilikan : true) &&
+      (filterLayanan ? dataClient.layanan === filterLayanan : true)
+  );
+
+  // Struktur folder berdasarkan Kepemilikan dan Layanan
+  const folderStructure = Array.from(
+    new Set(filteredDataClients.map((client) => `${client.kepemilikan}-${client.layanan}-${client.status}`))
+  ).map((key) => {
+    const [kepemilikan, layanan, status] = key.split("-");
+    return {
+      kepemilikan,
+      layanan,
+      status,
+      files: filteredDataClients.filter(
+        (dataClient) =>
+          dataClient.kepemilikan === kepemilikan && dataClient.layanan === layanan && dataClient.status == status
+      ),
+    };
+  });
+
+  // Fungsi untuk membuka atau menutup folder
+  const toggleFolder = (kepemilikan, layanan, status) => {
+    const folderKey = `${kepemilikan}-${layanan}-${status}`;
+    if (selectedFolder === folderKey) {
+      setSelectedFolder(null);
+    } else {
+      setSelectedFolder(folderKey);
+    }
+  };
+
+  // Fungsi untuk membuka form
   const toggleForm = () => {
     setShowForm(!showForm);
     setErrorMessage("");
   };
 
-  const filteredDataClients = dataClients.filter(
-    (dataClient) =>
-      (dataClient.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        dataClient.kepemilikan
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())) &&
-      (filterKepemilikan
-        ? dataClient.kepemilikan === filterKepemilikan
-        : true) &&
-      (filterKategori ? dataClient.kategori === filterKategori : true) &&
-      (filterLayanan ? dataClient.layanan === filterLayanan : true)
-  );
+  // Fungsi untuk mengedit Data Client
 
-  const currentDataClients = filteredDataClients.slice(
-    indexOfFirstClient,
-    indexOfLastClient
-  );
+  // Gimmick Form untuk Add Data Client
+  const handleGimmickSubmit = () => {
+    console.log("Gimmick Form Data: ", gimmickData); // Debugging
+    // Melanjutkan ke form asli atau menyimpan data gimmick (jika diperlukan)
+    setShowForm(true); // Tampilkan form asli
+  };
 
-  const nextPage = () => setCurrentPage(currentPage + 1);
-  const prevPage = () => setCurrentPage(currentPage - 1);
+  // Select layanan dan menampilkan syarat kelengkapan
+  const handleLayananChange = (e) => {
+    const selected = e.target.value;
+    setSelectedLayanan(selected);
+    if (selected === "PPJB") {
+      setSyarat([
+        "Fotokopi KTP ",
+        "Fotokopi KK ",
+        "Fotokopi Sertifikat",
+        "Fotokopi PBB Tahun Terakhir",
+        "Fotokopi IMB (jika ada)",
+      ]);
+    } else if (selected === "AKTA SEWA") {
+      setSyarat([
+        "Fotokopi KTP Penywa ",
+        "Fotokopi KK Penyewa",
+        "Fotokopi KTP Pemberi Sewa ",
+        "Fotokopi KK Pemberi Sewa",
+        "Data Objek Sewa",
+      ]);
+    } else if (selected === "WASIAT") {
+      setSyarat([
+        "Fotokopi KTP Ahli waris",
+        "Fotokopi KK Ahli waris",
+        "Data Harta yang Diwariskan",
+        "Penerima Wasiat",
+      ]);
+    } else {
+      setSyarat([]);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4 text-black">
@@ -224,25 +243,105 @@ const DataClient = () => {
             type="text"
             className="w-full md:w-64 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-blue-500 text-black"
             placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value=""
+            onChange={() => { }}
           />
           <button
             className="ml-2 md:ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={toggleForm}
+            onClick={() => setShowLayananModal(true)}
           >
             + Add New Data Client
           </button>
-          <button
-  className="ml-2 bg-purple-600 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded"
-  onClick={() => setShowLayananModal(true)}
->
-  Info Layanan
-</button>
-
         </div>
       </div>
 
+      {showLayananModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg w-11/12 md:w-2/3 lg:w-1/2 max-h-[80vh] overflow-auto relative">
+      
+      <button
+        className="absolute top-2 right-2 text-black font-medium bg-transparent hover:underline font-bold"
+        onClick={() => setShowLayananModal(false)}
+      >
+        Close
+      </button>
+
+      <h2 className="text-xl font-bold mb-4"> Form</h2>
+
+      {/* Kepemilikan and Status in one row */}
+      <div className="flex space-x-4 mb-4">
+        <select
+          value={selectedKepemilikan}
+          onChange={(e) => setSelectedKepemilikan(e.target.value)}
+          className="mt-1 block w-1/2 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="">Choose Kepemilikan</option>
+          {clients.map((client) => (
+            <option key={client.id} value={client.nama}>
+              {client.nama}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={selectedStatus}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          className="mt-1 block w-1/2 px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="">Choose Status</option>
+          <option value="proses pemberkasan">Proses Pemberkasan</option>
+          <option value="pemberkasan selesai">Pemberkasan Selesai</option>
+        </select>
+      </div>
+
+      {/* Layanan Select */}
+      <select
+        value={selectedLayanan}
+        onChange={handleLayananChange}
+        className="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+      >
+        <option value="">Choose Layanan</option>
+        <option value="PPJB">PPJB</option>
+        <option value="AKTA SEWA">AKTA SEWA</option>
+        <option value="WASIAT">WASIAT</option>
+      </select>
+
+      {/* Syarat Kelengkapan with checkboxes */}
+      <div className="mt-4">
+        {syarat.length > 0 && (
+          <div>
+            <h3 className="font-semibold">Syarat Kelengkapan</h3>
+            {syarat.map((item, index) => (
+              <div key={index} className="flex justify-between items-center mb-2">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    className="mr-2"
+                    // Optional: you can add logic for checking/unchecking syarat
+                  />
+                  <span>{item}</span>
+                </div>
+                <button
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-md shadow-md"
+                  onClick={() => setShowForm(true)} // Opens the actual form to upload file
+                >
+                  + Add
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <button
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        onClick={handleGimmickSubmit}
+      >
+        Submit
+      </button>
+    </div>
+  </div>
+)}
       {/* Filter Section */}
       <div className="mb-4 flex flex-wrap space-x-2 items-center bg-white p-2 rounded-md shadow-sm">
         <select
@@ -260,21 +359,6 @@ const DataClient = () => {
 
         <select
           className="px-3 py-2 bg-white text-black border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-blue-500"
-          value={filterKategori}
-          onChange={(e) => setFilterKategori(e.target.value)}
-        >
-          <option value="">Filter by Kategori</option>
-          <option value="KTP">KTP</option>
-          <option value="KK">KK</option>
-          <option value="NPWP">NPWP</option>
-          <option value="SERTIFIKAT">SERTIFIKAT</option>
-          <option value="SURAT NIKAH">SURAT NIKAH</option>
-          <option value="AKTA KEMATIAN">AKTA KEMATIAN</option>
-          <option value="LAINYA">LAINYA</option>
-        </select>
-
-        <select
-          className="px-3 py-2 bg-white text-black border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-blue-500"
           value={filterLayanan}
           onChange={(e) => setFilterLayanan(e.target.value)}
         >
@@ -288,125 +372,76 @@ const DataClient = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow-lg p-4">
-        <table className="min-w-full bg-white table">
-          <thead>
-            <tr>
-              <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
-                Nama Dokumen
-              </th>
-              <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
-                Kepemilikan
-              </th>
-              <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
-                kategori
-              </th>
-              <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
-                layanan
-              </th>
-              <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
-                File
-              </th>
-              <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentDataClients.map((dataClient, index) => {
-              const createdAt = new Date(dataClient.createdAt);
-              const now = new Date();
-              const showEditButton =
-                (now - createdAt) / (1000 * 60 * 60 * 24) <= 7; // dalam hari
+        <div className="space-y-4">
+          {/* Tampilkan folder */}
+          {folderStructure.map((folder, index) => (
+            <div key={index}>
+              <button
+                className="w-full text-left bg-gray-200 px-4 py-2 rounded-md shadow-sm"
+                onClick={() => toggleFolder(folder.kepemilikan, folder.layanan, folder.status)}
+              >
+                <span>{folder.kepemilikan} - {folder.layanan} - {folder.status}</span>
+              </button>
 
-              return (
-                <tr key={index} className="text-black">
-                  <td className="border-t-2 border-gray-200 py-2 px-4">
-                    <div className="flex flex-col">
-                      <span>{dataClient.nama}</span>
-                      <span className="text-xs text-gray-500">
-                        Diunggah oleh: {dataClient.createdBy || "Unknown"}
-                        <br />
-                        Tgl Upload:{" "}
-                        {new Date(dataClient.createdAt).toLocaleDateString(
-                          "id-ID"
-                        )}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="border-t-2 border-gray-200 py-2 px-4">
-                    {dataClient.kepemilikan}
-                  </td>
-                  <td className="border-t-2 border-gray-200 py-2 px-4">
-                    {dataClient.kategori}
-                  </td>
-                  <td className="border-t-2 border-gray-200 py-2 px-4">
-                    {dataClient.layanan}
-                  </td>
-                  <td className="border-t-2 border-gray-200 py-2 px-4">
-                    {dataClient.file ? (
-                      <button
-                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center justify-center gap-2"
-                        onClick={() => handleViewFile(dataClient.file)}
-                      >
-                        <FontAwesomeIcon icon={faEye} />
-                      </button>
-                    ) : (
-                      <span className="text-gray-500">No file</span>
-                    )}
-                  </td>
-                  <td className="border-t-2 border-gray-200 py-2 px-4">
-                    <div className="flex justify-around gap-2">
-                      {showEditButton && (
-                        <button
-                          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center gap-2"
-                          onClick={() => handleEditDataClient(dataClient)}
-                        >
-                          <FontAwesomeIcon icon={faEdit} />
-                        </button>
-                      )}
-                      <a
-                        href={dataClient.file}
-                        className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center gap-2"
-                        download={`${dataClient.nama}.pdf`}
-                      >
-                        <FontAwesomeIcon icon={faDownload} />
-                      </a>
-                      {showEditButton && (
-                        <button
-                          className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center gap-2"
-                          onClick={() => handleDeleteDataClient(dataClient.id)}
-                        >
-                          <FontAwesomeIcon icon={faTrash} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              {/* Tampilkan file jika folder dibuka */}
+              {selectedFolder === `${folder.kepemilikan}-${folder.layanan}-${folder.status}` && (
+                <div className="mt-2 pl-6">
+                  <table className="min-w-full bg-white">
+                    <thead>
+                      <tr>
+                        <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
+                          Nama Dokumen
+                        </th>
+                        <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
+                          Action
+                        </th>
+                        <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
+                          Info Upload
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {folder.files.map((file, index) => (
+                        <tr key={index} className="text-black">
+                          <td className="border-t-2 border-gray-200 py-2 px-4">{file.nama}</td>
+                          <td className="border-t-2 border-gray-200 py-2 px-4">
+                            <div className="flex justify-around gap-2">
+                              <button
+                                className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center justify-center"
+                                onClick={() => handleViewFile(file.file)}
+                              >
+                                <FontAwesomeIcon icon={faEye} />
+                              </button>
+                              <button
+                                className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center justify-center"
+                                onClick={() => handleEditDataClient(file)}
+                              >
+                                <FontAwesomeIcon icon={faEdit} />
+                              </button>
+                              <button
+                                className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md shadow-md flex items-center justify-center"
+                                onClick={() => handleDeleteDataClient(file.id)}
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                            </div>
+                          </td>
+                          <td className="border-t-2 border-gray-200 py-2 px-4">
+                            <span>Uploaded by: {file.createdBy || "Unknown"}</span><br />
+                            <span>Tgl Upload: {new Date(file.createdAt).toLocaleDateString("id-ID")}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-between mt-4">
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={prevPage}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </button>
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={nextPage}
-          disabled={currentDataClients.length < clientsPerPage}
-        >
-          Next
-        </button>
-      </div>
-
-      {/* Modal for viewing files */}
+      {/* Modal untuk melihat file */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-4 w-11/12 md:w-3/4 lg:w-1/2 h-3/4 relative">
@@ -426,66 +461,18 @@ const DataClient = () => {
         </div>
       )}
 
-      {/* Floating data client form */}
+      {/* Form untuk menambah/edit data client */}
       {showForm && (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-md p-8">
+        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-70 z-50">
+          <div className="bg-white w-full h-full p-8 overflow-auto">
             <DataClientForm
               onCancel={toggleForm}
-              onSave={handleSaveDataClient}
-              dataClient={editDataClient}
+              onSave={handleSaveDataClient} // Menyimpan data client dengan memanggil fetchDataClients
+              dataClient={editDataClient} // Pass data client untuk edit
             />
           </div>
         </div>
       )}
-        {showLayananModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg w-11/12 md:w-2/3 lg:w-1/2 max-h-[80vh] overflow-auto relative">
-      <button
-        className="absolute top-2 right-2 text-black font-medium bg-transparent hover:underline font-bold"
-        onClick={() => {
-          setShowLayananModal(false);
-          setSelectedLayanan(null);
-        }}
-      >
-        Close
-      </button>
-
-      {!selectedLayanan ? (
-        <>
-          <h2 className="text-xl font-bold mb-4">Daftar Layanan Kantor Notaris</h2>
-          <ul className="space-y-2">
-            {layananList.map((layanan, index) => (
-              <li
-                key={index}
-                className="bg-gray-100 p-3 rounded cursor-pointer hover:bg-gray-200"
-                onClick={() => setSelectedLayanan(layanan)}
-              >
-                {layanan.nama}
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : (
-        <>
-          <h2 className="text-xl font-bold mb-2">{selectedLayanan.nama}</h2>
-          <p className="text-gray-600 mb-2">Syarat-syarat:</p>
-          <ul className="list-disc list-inside text-gray-800 mb-4">
-            {selectedLayanan.syarat.map((syarat, idx) => (
-              <li key={idx}>{syarat}</li>
-            ))}
-          </ul>
-          <button
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-            onClick={() => setSelectedLayanan(null)}
-          >
-            Kembali ke Daftar Layanan
-          </button>
-        </>
-      )}
-    </div>
-  </div>
-)}
     </div>
   );
 };
