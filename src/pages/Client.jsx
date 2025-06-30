@@ -368,9 +368,6 @@ const Client = () => {
                 Alamat
               </th>
               <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
-                Status
-              </th>
-              <th className="py-2 px-4 bg-gray-200 text-left text-sm font-semibold text-gray-700">
                 Actions
               </th>
             </tr>
@@ -400,9 +397,7 @@ const Client = () => {
                   <td className="border-t-2 border-gray-200 py-2 px-4">
                     {client.alamat || "N/A"}
                   </td>
-                  <td className="border-t-2 border-gray-200 py-2 px-4">
-                    {client.status}
-                  </td>
+
 
                   <td className="border-t-2 border-gray-200 py-2 px-4 flex justify-around">
                     <button
